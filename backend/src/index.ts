@@ -5,6 +5,7 @@ import cors from 'cors';
 import { AppDataSource } from "./data-source"
 import { Express } from "express";
 import cookieParser from 'cookie-parser'
+import userRoutes from "./routes/userRoutes"
 
 dotenv.config();
 
@@ -33,7 +34,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type'],
 }));
-// app.use(parcelRoutes);
+app.use('/api/users',userRoutes);
 
 // start express server
 app.listen(PORT, HOST, () => {

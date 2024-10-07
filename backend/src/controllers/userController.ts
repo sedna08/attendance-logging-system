@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken';
 import { AppDataSource } from "../data-source";
 import * as dotenv from "dotenv";
+import { validate } from 'class-validator';
 
 dotenv.config();
 
@@ -18,6 +19,13 @@ export const signup = async (res: Response, req: Request) => {
         };
 
         const newUser = new User();
+
+        validate(newUser).then(errors => {
+            if (errors.length > 0) {
+                res.status(409).send("Validation failed, Email incorrect format");
+                return;
+            }
+        });
 
         // saving the user
         const savedUser = await userRepository.save(newUser);
