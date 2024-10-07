@@ -1,14 +1,15 @@
 import * as express from 'express';
 import "reflect-metadata"
 import * as dotenv from "dotenv";
-import * as cors from 'cors';
+import cors from 'cors';
 import { AppDataSource } from "./data-source"
 import { Express } from "express";
+import cookieParser from 'cookie-parser'
 
 dotenv.config();
 
 
-const PORT = parseInt(process.env.SERVER_PORT,10);
+const PORT = parseInt(process.env.BACKEND_SERVER_PORT,10) || 5000;
 const HOST = '0.0.0.0';
 
 AppDataSource.initialize()
@@ -23,9 +24,12 @@ AppDataSource.initialize()
 
 // create and setup express app
 const app: Express = express();
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 app.use(cors({
-    origin: [process.env.FRONTEND_ORIGIN],
+    origin: [process.env.FRONTEND_ORIGIN, "http://localhost:3000"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type'],
 }));
