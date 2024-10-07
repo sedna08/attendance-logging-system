@@ -3,7 +3,7 @@ import { User } from "../entity/User";
 import { AppDataSource } from "../data-source";
 
 
-export const saveUser = async (res: Response, req: Request, next: NextFunction) => {
+export const saveUser = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
         const username = await userRepository.findOne({
@@ -12,8 +12,8 @@ export const saveUser = async (res: Response, req: Request, next: NextFunction) 
             },
         });
         if(username) {
-            res.json(409).send("username already taken");
-            return;
+            res.status(409).send("username already taken");
+            return 
         }
 
         //checking if email already exist
@@ -25,8 +25,8 @@ export const saveUser = async (res: Response, req: Request, next: NextFunction) 
 
         //if email exist in the database respond with a status of 409
         if (emailCheck) {
-            res.json(409).send("Authentication failed");
-            return;
+            res.status(409).send("Authentication failed");
+            return 
         }
         
         next();

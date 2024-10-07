@@ -1,14 +1,14 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { User } from "../entity/User";
 import { Request, Response, NextFunction } from "express";
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { AppDataSource } from "../data-source";
 import * as dotenv from "dotenv";
 import { validate } from 'class-validator';
 
 dotenv.config();
 
-export const signup = async (res: Response, req: Request) => {
+export const signup = async (req: Request, res: Response) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
         const { userName, email, password } = req.body;
@@ -17,15 +17,14 @@ export const signup = async (res: Response, req: Request) => {
             email,
             password: await bcrypt.hash(password, 10),
         };
+        const newUser = userRepository.create(data);
+        
 
-        const newUser = new User();
-
-        validate(newUser).then(errors => {
-            if (errors.length > 0) {
-                res.status(409).send("Validation failed, Email incorrect format");
-                return;
-            }
-        });
+        const validation_errors = await validate(newUser);
+        if(validation_errors.length > 0 ) {
+            res.status(409).send(`Validation failed, Email incorrect format ${newUser.email}`);
+            return;
+        }
 
         // saving the user
         const savedUser = await userRepository.save(newUser);
@@ -53,7 +52,7 @@ export const signup = async (res: Response, req: Request) => {
 
 //login authentication
 
-export const login = async (res: Response, req: Request) => {
+export const login = async (req: Request, res: Response) => {
     try {
         const userRepository = AppDataSource.getRepository(User);
         const { email, password } = req.body;
@@ -74,24 +73,47 @@ export const login = async (res: Response, req: Request) => {
 
             if (isSame) {
                 let token = jwt.sign({ id: user.id }, process.env.secretKey, {
-                expiresIn: 1 * 24 * 60 * 60 * 1000,
-            });
+                    expiresIn: 1 * 24 * 60 * 60 * 1000,
+                });
 
-            // if password matches with the one in the database
-            // go ahead and generate a cookie for the user
-            res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-            console.log("user", JSON.stringify(user, null, 2));
-            console.log(token);
-            // send user data
-            res.status(201).send(user);
+                // if password matches with the one in the database
+                // go ahead and generate a cookie for the user
+                res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
+                console.log("user", JSON.stringify(user, null, 2));
+                console.log(token);
+                // send user data
+                res.status(201).send(user);
             } else {
-            res.status(401).send("Authentication failed");
+                res.status(401).send("Authentication failed incorrect password");
             }
         } else {
-            res.status(401).send("Authentication failed");
+            res.status(401).send("Authentication failed email not found");
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
+export const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await AppDataSource.getRepository(User).find();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+        const userToRemove = await userRepository.findOneBy({ id: Number(req.params.id) });
+        if (userToRemove) {
+            await userRepository.remove(userToRemove);
+            res.status(200).send("User Removed Successfully");
+        } else {
+            res.status(401).send("User Not Found");
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
