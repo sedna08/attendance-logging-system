@@ -1,0 +1,1 @@
+# This repository is for a attendance logging system
