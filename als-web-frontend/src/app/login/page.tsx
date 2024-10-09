@@ -25,7 +25,7 @@ export default function Login() {
                                 <a href="#" className="text-sm text-indigo-700 font-semibold">Forgot Password?</a>
                             </div>
                             <div>
-                                <a href="#" className="text-sm text-indigo-700 font-semibold">Sign up</a>
+                                <a href="/signup" className="text-sm text-indigo-700 font-semibold">Sign up</a>
                             </div>
                         </div>
                         <div className="mt-5">
