@@ -8,6 +8,15 @@ export default function Login() {
                     <h1 className="text-3xl block text-center font-semibold"><i className="fa-solid fa-user"></i> Sign Up</h1>
                     <hr className = "mt-3"></hr>
                     <form className ="mt-3 mb-3">
+                        <label className = "block w-full text-base mt-3">
+                            ID Number
+                            <label className="text-red-600">*</label>
+                        </label>
+                        <input placeholder="Enter ID Number"
+                            //value={searchParcel.parcel_id}
+                            //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
+                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                        />
                         <div className="flex justify-between items-center">
                             <div className="w-full">
                                 <label className = "block w-full mr-2 text-base mt-3">

@@ -6,13 +6,16 @@ import { AppDataSource } from "../data-source";
 export const saveUser = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
-        const username = await userRepository.findOne({
-            where: { 
-                userName: req.body.userName, 
+         //checking if email already exist
+        const idCheck = await userRepository.findOne({
+            where: {
+                id: req.body.id,
             },
         });
-        if(username) {
-            res.status(409).send("username already taken");
+
+        //if email exist in the database respond with a status of 409
+        if (idCheck) {
+            res.status(409).send("ID already exists");
             return 
         }
 
@@ -25,7 +28,7 @@ export const saveUser = async (req: Request, res: Response, next: NextFunction) 
 
         //if email exist in the database respond with a status of 409
         if (emailCheck) {
-            res.status(409).send("Authentication failed");
+            res.status(409).send("Authentication failed, Email already exists");
             return 
         }
         

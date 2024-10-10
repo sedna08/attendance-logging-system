@@ -11,9 +11,11 @@ dotenv.config();
 export const signup = async (req: Request, res: Response) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
-        const { userName, email, password } = req.body;
+        const { id,firstName, lastName, email, password } = req.body;
         const data = {
-            userName,
+            id,
+            firstName,
+            lastName,
             email,
             password: await bcrypt.hash(password, 10),
         };
@@ -106,7 +108,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
     try {
         const userRepository = AppDataSource.getRepository(User);
-        const userToRemove = await userRepository.findOneBy({ id: Number(req.params.id) });
+        const userToRemove = await userRepository.findOneBy({ id: req.params.id });
         if (userToRemove) {
             await userRepository.remove(userToRemove);
             res.status(200).send("User Removed Successfully");
