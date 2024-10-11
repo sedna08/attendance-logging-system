@@ -1,8 +1,9 @@
+'use client';
 import Head from 'next/head';
-import { validate } from 'class-validator';
 import axios from 'axios';
 import { User } from '../../lib/interfaces'
-import React, { useState, ChangeEvent, FocusEvent } from 'react';
+// import React, { useState, ChangeEvent, FocusEvent } from 'react';
+import { useState } from 'react';
 
 interface signUpFormState {
     [key:string]: string,
@@ -13,33 +14,84 @@ export default function SignUp() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users/';
     const [newUser, setNewUser] = useState({id: '',firstName:'', lastName: '', email: '', password: ''});
 
-    const [signupFormData, setSignUpFormData] = useState<signUpFormState>({
-        idInput: '',
-        firstNameInput: '',
-        lastNameInput: '',
-        emailInput: '',
-        passwordInput: ''
+    // Define form state
+    const [formData, setFormData] = useState({
+        id: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
     });
 
-     const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({
-        idInput: false,
-        firstNameInput: false,
-        lastNameInput: false,
-        emailInput: false,
-        passwordInput: false
+    const [errors, setErrors] = useState({
+        id: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
     });
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    // Regex for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Handle input changes
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setSignUpFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData({
+        ...formData,
+        [name]: value,
+        });
     };
 
-    const handleBlur = (e: FocusEvent<HTMLInputElement>): void => {
-        const { name } = e.target;
-        setIsTouched((prev) => ({ ...prev, [name]: true }));
+     // Form validation function
+    const validateForm = () => {
+        let valid = true;
+        let newErrors = {
+            id: '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+        };
+
+        if (!formData.id.trim()) {
+            newErrors.id = 'ID is required';
+            valid = false;
+        }
+        if (!formData.firstName.trim()) {
+            newErrors.firstName = 'First Name is required';
+            valid = false;
+        }
+        if (!formData.lastName.trim()) {
+            newErrors.lastName = 'Last Name is required';
+            valid = false;
+        }
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+            valid = false;
+        } else if (!emailRegex.test(formData.email)) {
+            newErrors.email = 'Email is invalid';
+            valid = false;
+        }
+        if (!formData.password.trim()) {
+            newErrors.password = 'Password is required';
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
     };
 
-    const isValid = (value: string) => value.trim() !== '';
+    // Handle form submission
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (validateForm()) {
+            // Process form submission
+            console.log('Form is valid, submitting data:', formData);
+        } else {
+            console.log('Form has errors, not submitting.');
+        }
+    };
 
     // create user
     const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,17 +110,24 @@ export default function SignUp() {
                 <div className="w-auto p-6 shadow-lg bg-white rounded-md">
                     <h1 className="text-3xl block text-center font-semibold"><i className="fa-solid fa-user"></i> Sign Up</h1>
                     <hr className = "mt-3"></hr>
-                    <form className ="mt-3 mb-3">
+                    <form onSubmit={handleSubmit} className ="mt-3 mb-3">
+                        {/* ID Field */}
                         <label className = "block w-full text-base mt-3">
                             ID Number
                             <label className="text-red-600">*</label>
                         </label>
-                        <input placeholder="Enter ID Number"
-                            type= "text"
-                            //value={searchParcel.parcel_id}
-                            //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
-                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                        <input 
+                            placeholder="Enter ID Number"
+                            name="id"
+                            value={formData.id}
+                            onChange={handleInputChange}
+                            //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                            className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
+                                        errors.id ? 'border-red-500' : 'border-gray-300'
+                                        } rounded-md`}
                         />
+
+                        {/* First Name and Last Name Fields */}
                         <div className="flex justify-between items-center">
                             <div className="w-full">
                                 <label className = "block w-full mr-2 text-base mt-3">
@@ -77,41 +136,68 @@ export default function SignUp() {
                                 </label>
                             </div>
                             <div className="w-full">
-                                <label className = "block w-full ml-2 text-base mt-3">
+                                <label className = "block w-full text-base mt-3">
                                     Last Name
                                     <label className="text-red-600">*</label>
                                 </label>
                             </div>
                         </div>
                         <div className="flex justify-between items-center ">
-                            <input placeholder="Enter First Name"
-                                //value={searchParcel.parcel_id}
-                                //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
-                                className="border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                            <input 
+                                placeholder="Enter First Name"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleInputChange}
+                                //className="border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                                className={`border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
+                                            errors.firstName ? 'border-red-500' : 'border-gray-300'
+                                            } rounded-md`}
                             />
-                            <input placeholder="Enter Last Name"
-                                //value={searchParcel.parcel_id}
-                                //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
-                                className="border w-6/12 ml-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                            <input 
+                                placeholder="Enter Last Name"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleInputChange}
+                                //className="border w-6/12 ml-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                                className={`border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
+                                            errors.lastName ? 'border-red-500' : 'border-gray-300'
+                                            } rounded-md`}
                             />
                         </div>
+                        {/* Email Field */}
                         <label className = "block w-full text-base mt-3">
                             Email
                             <label className="text-red-600">*</label>
+                            <label className="text-red-600"> {errors.email === 'Email is invalid' ?  'Incorrect Email Format': ''}</label>
                         </label>
-                        <input placeholder="Enter Email"
-                            //value={searchParcel.parcel_id}
-                            //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
-                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                        <input 
+                            placeholder="Enter Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                            className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
+                                        errors.email ? 'border-red-500' : 'border-gray-300'
+                                        } rounded-md`}
+
                         />
+
+                        {/* Password Field */}
                         <label className = "block w-full text-base mt-3">
                             Password
                             <label className="text-red-600">*</label>
                         </label>
-                        <input placeholder="Enter Password"
-                            //value={searchParcel.parcel_id}
-                            //onChange={(e) => {setSearchParcel({ ...searchParcel, parcel_id: e.target.value })}}
-                            className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                        <input 
+                            placeholder="Enter Password"
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+                            className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
+                                        errors.password ? 'border-red-500' : 'border-gray-300'
+                                        } rounded-md`}
                         />
                         <div className = "mt-3 flex justify-between items-center">
                             <div>
