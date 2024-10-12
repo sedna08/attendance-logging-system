@@ -14,13 +14,6 @@ interface signUpFormState {
 export default function SignUp() {
     const router = useRouter();
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users';
-    let newUser = {
-        id: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-    };
 
     const [serverSideError, setServerSideError] = useState('');
 
@@ -65,26 +58,26 @@ export default function SignUp() {
         };
 
         if (!formData.id.trim()) {
-            newErrors.id = 'ID is required';
+            newErrors.id = 'required';
             valid = false;
         }
         if (!formData.firstName.trim()) {
-            newErrors.firstName = 'First Name is required';
+            newErrors.firstName = 'required';
             valid = false;
         }
         if (!formData.lastName.trim()) {
-            newErrors.lastName = 'Last Name is required';
+            newErrors.lastName = 'required';
             valid = false;
         }
         if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
+            newErrors.email = 'required';
             valid = false;
         } else if (!emailRegex.test(formData.email)) {
-            newErrors.email = 'Email is invalid';
+            newErrors.email = 'invalid';
             valid = false;
         }
         if (!formData.password.trim()) {
-            newErrors.password = 'Password is required';
+            newErrors.password = 'required';
             valid = false;
         }
 
@@ -96,14 +89,7 @@ export default function SignUp() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (validateForm()) {
-            // Process form submission
-            //console.log('Form is valid, submitting data:', formData);
-            newUser = formData;
             createUser();
-            console.log(`serverSideError: ${serverSideError}`);
-            if(serverSideError === '') {
-                router.push('/login');
-            }
         } else {
             console.log('Form has errors, not submitting.');
         }
@@ -112,24 +98,25 @@ export default function SignUp() {
     // create user
     const createUser = async () => {
         try {
-            console.log(newUser)
-            const response = await axios.post(`${apiUrl}/signup`, newUser);
-            newUser = {
+            const response = await axios.post(`${apiUrl}/signup`, formData);
+            setFormData({id: '',firstName:'', lastName: '', email: '', password: ''});
+            setServerSideError('');
+            router.push('/login');
+        } catch(error) {
+            let newErrors = {
                 id: '',
                 firstName: '',
                 lastName: '',
                 email: '',
                 password: '',
-            }
-            setFormData({id: '',firstName:'', lastName: '', email: '', password: ''});
-            setServerSideError('');
-        } catch(error) {
+            };
             if (axios.isAxiosError(error) && error.response) {
                 if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
-                    setErrors({
-                    ...errors,
-                    ['email']: "Email already exists or Incorrect format",
-                    });
+                    newErrors.email = 'already exists'
+                    setErrors(newErrors);
+                } else if(error.response.status == 409 && error.response.data.toString().includes("ID")) {
+                    newErrors.id = 'already exists'
+                    setErrors(newErrors);
                 }
             }
             setServerSideError('Error in creating user');
@@ -148,6 +135,7 @@ export default function SignUp() {
                         <label className = "block w-full text-base mt-3">
                             ID Number
                             <label className="text-red-600">*</label>
+                            <label className="text-red-600"> {errors.id ?  `${errors.id}`: ''}</label>
                         </label>
                         <input 
                             placeholder="Enter ID Number"
