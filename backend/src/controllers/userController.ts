@@ -4,38 +4,12 @@ import { Request, Response, NextFunction } from "express";
 import * as jwt from 'jsonwebtoken';
 import { AppDataSource } from "../data-source";
 import * as dotenv from "dotenv";
-import { validate } from 'class-validator';
 
 dotenv.config();
 
 export const signup = async (req: Request, res: Response) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
-
-        //find a user by their email
-        let user = await userRepository.findOne({
-            where: {
-                id: req.body.id
-            } 
-        });
-
-        if(user) {
-            res.status(409).send("ID already exists");
-            return;
-        }
-
-        //find a user by their email
-        user = await userRepository.findOne({
-            where: {
-                email: req.body.email
-            } 
-        });
-
-        if(user) {
-            res.status(409).send("Email already exists");
-            return;
-        }
-
 
         const { id,firstName, lastName, email, password } = req.body;
         const data = {
@@ -47,14 +21,6 @@ export const signup = async (req: Request, res: Response) => {
         };
         const newUser = userRepository.create(data);
         
-        // Regex for email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if(!emailRegex.test(newUser.email)) {
-            res.status(409).send(`Validation failed, Email incorrect format ${newUser.email}`);
-            return;
-        }
-
         // saving the user
         const savedUser = await userRepository.save(newUser);
 
@@ -63,13 +29,13 @@ export const signup = async (req: Request, res: Response) => {
         // set cookie with the token generated
         if (savedUser) {
             let token = jwt.sign({ id: savedUser.id }, process.env.secretKey, {
-                expiresIn: 1 * 24 * 60 * 60 * 1000,
+                expiresIn: 1 * 24 * 60 * 60 * 1000, // 1 day * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
             });
 
             res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-            console.log("user", JSON.stringify(savedUser, null, 2));
-            console.log(token);
-            //send users details
+            // console.log("user", JSON.stringify(savedUser, null, 2));
+            // console.log(token);
+            // send users details
             res.status(201).send("Successfully Saved User");
         } else {
             res.status(409).send("Details are not correct");
@@ -102,14 +68,14 @@ export const login = async (req: Request, res: Response) => {
 
             if (isSame) {
                 let token = jwt.sign({ id: user.id }, process.env.secretKey, {
-                    expiresIn: 1 * 24 * 60 * 60 * 1000,
+                    expiresIn: 1 * 24 * 60 * 60 * 1000, // 1 day * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
                 });
 
                 // if password matches with the one in the database
                 // go ahead and generate a cookie for the user
                 res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-                console.log("user", JSON.stringify(user, null, 2));
-                console.log(token);
+                // console.log("user", JSON.stringify(user, null, 2));
+                // console.log(token);
                 // send user data
                 res.status(201).send(user);
             } else {

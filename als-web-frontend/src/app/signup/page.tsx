@@ -97,13 +97,16 @@ export default function SignUp() {
                 password: '',
             };
             if (axios.isAxiosError(error) && error.response) {
-                if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
+                if(error.response.status == 409 && error.response.data.toString().includes("Authentication") && error.response.data.toString().includes("Email")) {
                     newErrors.email = 'already exists'
                     setErrors(newErrors);
-                } else if(error.response.status == 409 && error.response.data.toString().includes("ID")) {
+                } else if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
+                    newErrors.email = 'incorrect format'
+                    setErrors(newErrors);
+                } else if(error.response.status == 409 && error.response.data.toString().includes("Authentication") && error.response.data.toString().includes("ID")) {
                     newErrors.id = 'already exists'
                     setErrors(newErrors);
-                }
+                } 
             }
             setServerSideError('Error in creating user');
             console.error('Error in creating user:', error);
