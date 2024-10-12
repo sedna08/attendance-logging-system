@@ -4,6 +4,7 @@ import axios from 'axios';
 import { User } from '../../lib/interfaces'
 // import React, { useState, ChangeEvent, FocusEvent } from 'react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'
 
 interface signUpFormState {
     [key:string]: string,
@@ -11,8 +12,17 @@ interface signUpFormState {
 
 
 export default function SignUp() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users/';
-    const [newUser, setNewUser] = useState({id: '',firstName:'', lastName: '', email: '', password: ''});
+    const router = useRouter();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users';
+    let newUser = {
+        id: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+    };
+
+    const [serverSideError, setServerSideError] = useState('');
 
     // Define form state
     const [formData, setFormData] = useState({
@@ -87,20 +97,43 @@ export default function SignUp() {
         e.preventDefault();
         if (validateForm()) {
             // Process form submission
-            console.log('Form is valid, submitting data:', formData);
+            //console.log('Form is valid, submitting data:', formData);
+            newUser = formData;
+            createUser();
+            console.log(`serverSideError: ${serverSideError}`);
+            if(serverSideError === '') {
+                router.push('/login');
+            }
         } else {
             console.log('Form has errors, not submitting.');
         }
     };
 
     // create user
-    const createUser = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const createUser = async () => {
         try {
+            console.log(newUser)
             const response = await axios.post(`${apiUrl}/signup`, newUser);
-            setNewUser({id: '',firstName:'', lastName: '', email: '', password: ''});
+            newUser = {
+                id: '',
+                firstName: '',
+                lastName: '',
+                email: '',
+                password: '',
+            }
+            setFormData({id: '',firstName:'', lastName: '', email: '', password: ''});
+            setServerSideError('');
         } catch(error) {
-            console.error('Error creating user:', error);
+            if (axios.isAxiosError(error) && error.response) {
+                if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
+                    setErrors({
+                    ...errors,
+                    ['email']: "Email already exists or Incorrect format",
+                    });
+                }
+            }
+            setServerSideError('Error in creating user');
+            console.error('Error in creating user:', error);
         }
     }
 
@@ -168,7 +201,7 @@ export default function SignUp() {
                         <label className = "block w-full text-base mt-3">
                             Email
                             <label className="text-red-600">*</label>
-                            <label className="text-red-600"> {errors.email === 'Email is invalid' ?  'Incorrect Email Format': ''}</label>
+                            <label className="text-red-600"> {errors.email ?  `${errors.email}`: ''}</label>
                         </label>
                         <input 
                             placeholder="Enter Email"
@@ -212,7 +245,9 @@ export default function SignUp() {
                             Sign up
                             </button>
                         </div>
-                        
+                        <div className = "flex justify-center mt-5">
+                            <label className=" text-red-600"> {serverSideError ?  `${serverSideError}`: ''}</label>
+                        </div>
                     </form>
                     
                 </div>

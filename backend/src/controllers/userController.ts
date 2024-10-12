@@ -11,6 +11,32 @@ dotenv.config();
 export const signup = async (req: Request, res: Response) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
+
+        //find a user by their email
+        let user = await userRepository.findOne({
+            where: {
+                id: req.body.id
+            } 
+        });
+
+        if(user) {
+            res.status(409).send("ID already exists");
+            return;
+        }
+
+        //find a user by their email
+        user = await userRepository.findOne({
+            where: {
+                email: req.body.email
+            } 
+        });
+
+        if(user) {
+            res.status(409).send("Email already exists");
+            return;
+        }
+
+
         const { id,firstName, lastName, email, password } = req.body;
         const data = {
             id,
@@ -21,9 +47,10 @@ export const signup = async (req: Request, res: Response) => {
         };
         const newUser = userRepository.create(data);
         
+        // Regex for email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const validation_errors = await validate(newUser);
-        if(validation_errors.length > 0 ) {
+        if(!emailRegex.test(newUser.email)) {
             res.status(409).send(`Validation failed, Email incorrect format ${newUser.email}`);
             return;
         }
@@ -43,7 +70,7 @@ export const signup = async (req: Request, res: Response) => {
             console.log("user", JSON.stringify(savedUser, null, 2));
             console.log(token);
             //send users details
-            res.status(201).send(savedUser);
+            res.status(201).send("Successfully Saved User");
         } else {
             res.status(409).send("Details are not correct");
         }
