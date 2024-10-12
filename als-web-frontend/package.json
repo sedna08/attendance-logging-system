@@ -11,11 +11,15 @@
   "dependencies": {
     "axios": "^1.7.7",
     "class-validator": "^0.14.1",
+    "js-cookie": "^3.0.5",
     "next": "14.2.15",
+    "next-cookies": "^2.0.3",
+    "nookies": "^2.5.2",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

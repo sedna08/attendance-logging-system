@@ -15,7 +15,7 @@ export const saveUser = async (req: Request, res: Response, next: NextFunction) 
 
         //if email exist in the database respond with a status of 409
         if (idCheck) {
-            res.status(409).send("ID already exists");
+            res.status(409).send("Authentication failed,ID already exists");
             return 
         }
 
@@ -31,6 +31,15 @@ export const saveUser = async (req: Request, res: Response, next: NextFunction) 
             res.status(409).send("Authentication failed, Email already exists");
             return 
         }
+
+        // Regex for email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if(!emailRegex.test(req.body.email)) {
+            res.status(409).send(`Validation failed, Email incorrect format ${req.body.email}`);
+            return;
+        }
+
         
         next();
 

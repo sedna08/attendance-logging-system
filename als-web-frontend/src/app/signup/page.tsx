@@ -1,17 +1,12 @@
 'use client';
 import axios from 'axios';
 import { useState} from 'react';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import useForm from '@/hooks/useForm';
-
-interface signUpFormState {
-    [key:string]: string,
-}
-
 
 export default function SignUp() {
     const router = useRouter();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [serverSideError, setServerSideError] = useState('');
     const { values, handleChange, resetForm } = useForm({ 
         id: '',
@@ -97,13 +92,16 @@ export default function SignUp() {
                 password: '',
             };
             if (axios.isAxiosError(error) && error.response) {
-                if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
+                if(error.response.status == 409 && error.response.data.toString().includes("Authentication") && error.response.data.toString().includes("Email")) {
                     newErrors.email = 'already exists'
                     setErrors(newErrors);
-                } else if(error.response.status == 409 && error.response.data.toString().includes("ID")) {
+                } else if(error.response.status == 409 && error.response.data.toString().includes("Email")) {
+                    newErrors.email = 'incorrect format'
+                    setErrors(newErrors);
+                } else if(error.response.status == 409 && error.response.data.toString().includes("Authentication") && error.response.data.toString().includes("ID")) {
                     newErrors.id = 'already exists'
                     setErrors(newErrors);
-                }
+                } 
             }
             setServerSideError('Error in creating user');
             console.error('Error in creating user:', error);
