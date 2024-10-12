@@ -1,10 +1,8 @@
 'use client';
-import Head from 'next/head';
 import axios from 'axios';
-import { User } from '../../lib/interfaces'
-// import React, { useState, ChangeEvent, FocusEvent } from 'react';
-import { useState } from 'react';
+import { useState} from 'react';
 import { useRouter } from 'next/navigation'
+import useForm from '@/hooks/useForm';
 
 interface signUpFormState {
     [key:string]: string,
@@ -14,11 +12,8 @@ interface signUpFormState {
 export default function SignUp() {
     const router = useRouter();
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/users';
-
     const [serverSideError, setServerSideError] = useState('');
-
-    // Define form state
-    const [formData, setFormData] = useState({
+    const { values, handleChange, resetForm } = useForm({ 
         id: '',
         firstName: '',
         lastName: '',
@@ -37,15 +32,6 @@ export default function SignUp() {
     // Regex for email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // Handle input changes
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData({
-        ...formData,
-        [name]: value,
-        });
-    };
-
      // Form validation function
     const validateForm = () => {
         let valid = true;
@@ -57,26 +43,26 @@ export default function SignUp() {
             password: '',
         };
 
-        if (!formData.id.trim()) {
+        if (!values.id.trim()) {
             newErrors.id = 'required';
             valid = false;
         }
-        if (!formData.firstName.trim()) {
+        if (!values.firstName.trim()) {
             newErrors.firstName = 'required';
             valid = false;
         }
-        if (!formData.lastName.trim()) {
+        if (!values.lastName.trim()) {
             newErrors.lastName = 'required';
             valid = false;
         }
-        if (!formData.email.trim()) {
+        if (!values.email.trim()) {
             newErrors.email = 'required';
             valid = false;
-        } else if (!emailRegex.test(formData.email)) {
+        } else if (!emailRegex.test(values.email)) {
             newErrors.email = 'invalid';
             valid = false;
         }
-        if (!formData.password.trim()) {
+        if (!values.password.trim()) {
             newErrors.password = 'required';
             valid = false;
         }
@@ -98,8 +84,8 @@ export default function SignUp() {
     // create user
     const createUser = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/signup`, formData);
-            setFormData({id: '',firstName:'', lastName: '', email: '', password: ''});
+            const response = await axios.post(`${apiUrl}/signup`, values);
+            resetForm();
             setServerSideError('');
             router.push('/login');
         } catch(error) {
@@ -140,8 +126,8 @@ export default function SignUp() {
                         <input 
                             placeholder="Enter ID Number"
                             name="id"
-                            value={formData.id}
-                            onChange={handleInputChange}
+                            value={values.id}
+                            onChange={handleChange}
                             //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
                             className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
                                         errors.id ? 'border-red-500' : 'border-gray-300'
@@ -151,24 +137,26 @@ export default function SignUp() {
                         {/* First Name and Last Name Fields */}
                         <div className="flex justify-between items-center">
                             <div className="w-full">
-                                <label className = "block w-full mr-2 text-base mt-3">
+                                <div className = "block w-full mr-2 text-base mt-3">
                                     First Name
                                     <label className="text-red-600">*</label>
-                                </label>
+                                    <label className="text-red-600"> {errors.firstName ?  `${errors.firstName}`: ''}</label>
+                                </div>
                             </div>
                             <div className="w-full">
-                                <label className = "block w-full text-base mt-3">
+                                <div className = "block w-full text-base mt-3">
                                     Last Name
                                     <label className="text-red-600">*</label>
-                                </label>
+                                    <label className="text-red-600"> {errors.lastName ?  `${errors.lastName}`: ''}</label>
+                                </div>
                             </div>
                         </div>
                         <div className="flex justify-between items-center ">
                             <input 
                                 placeholder="Enter First Name"
                                 name="firstName"
-                                value={formData.firstName}
-                                onChange={handleInputChange}
+                                value={values.firstName}
+                                onChange={handleChange}
                                 //className="border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
                                 className={`border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
                                             errors.firstName ? 'border-red-500' : 'border-gray-300'
@@ -177,8 +165,8 @@ export default function SignUp() {
                             <input 
                                 placeholder="Enter Last Name"
                                 name="lastName"
-                                value={formData.lastName}
-                                onChange={handleInputChange}
+                                value={values.lastName}
+                                onChange={handleChange}
                                 //className="border w-6/12 ml-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
                                 className={`border w-6/12 mr-2 text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
                                             errors.lastName ? 'border-red-500' : 'border-gray-300'
@@ -194,9 +182,9 @@ export default function SignUp() {
                         <input 
                             placeholder="Enter Email"
                             name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
+                            type="text"
+                            value={values.email}
+                            onChange={handleChange}
                             //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
                             className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
                                         errors.email ? 'border-red-500' : 'border-gray-300'
@@ -208,13 +196,14 @@ export default function SignUp() {
                         <label className = "block w-full text-base mt-3">
                             Password
                             <label className="text-red-600">*</label>
+                            <label className="text-red-600"> {errors.password ?  `${errors.password}`: ''}</label>
                         </label>
                         <input 
                             placeholder="Enter Password"
                             type="password"
                             name="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
+                            value={values.password}
+                            onChange={handleChange}
                             //className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
                             className={`border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600 ${
                                         errors.password ? 'border-red-500' : 'border-gray-300'
