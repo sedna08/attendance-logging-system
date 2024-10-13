@@ -38,6 +38,6 @@ app.use(cors({
 app.use('/userService',userRoutes);
 
 // start express server
-app.listen(PORT, HOST, () => {
+app.listen(PORT, () => {
     console.log(`Server is running and listening at ${PORT}`);
 })
