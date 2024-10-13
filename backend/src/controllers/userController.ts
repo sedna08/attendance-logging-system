@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+
 export const signup = async (req: Request, res: Response) => {
     try{
         const userRepository = AppDataSource.getRepository(User);
@@ -28,14 +29,6 @@ export const signup = async (req: Request, res: Response) => {
         // generate token with the user's id and the secretKey in the env file
         // set cookie with the token generated
         if (savedUser) {
-            // let token = jwt.sign({ id: savedUser.id }, process.env.secretKey, {
-            //     expiresIn: 1 * 24 * 60 * 60 * 1000, // 1 day * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
-            // });
-
-            // res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-            // console.log("user", JSON.stringify(savedUser, null, 2));
-            // console.log(token);
-            // send users details
             res.status(201).send("Successfully Saved User");
         } else {
             res.status(409).send("Details are not correct");
@@ -67,18 +60,11 @@ export const login = async (req: Request, res: Response) => {
             //generate token with the user's id and the secretKey in the env file
 
             if (isSame) {
-                let token = jwt.sign({ id: user.id }, process.env.secretKey, {
-                    // expiresIn: 1 * 24 * 60 * 60 * 1000, // 1 day * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
-                    expiresIn: 2 * 60 * 1000,
+                const token = jwt.sign({ id: user.id }, process.env.secretKey, {
+                    expiresIn: '5m',
                 });
 
-                // if password matches with the one in the database
-                // go ahead and generate a cookie for the user
-                res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-                // res.cookie("jwt", token, { maxAge: 2 * 60, httpOnly: true });
-                // console.log("user", JSON.stringify(user, null, 2));
-                // console.log(token);
-                // send user data
+                res.cookie("jwt", token, { httpOnly: true });
                 res.status(201).send("Authentication successful, Token generated");
             } else {
                 res.status(401).send("Authentication failed incorrect password");
@@ -115,38 +101,11 @@ export const deleteUser = async (req: Request, res: Response) => {
     }
 };
 
-export const authCheck = async (req: Request,res: Response) => {
-    const token = req.cookies.jwt; // Get JWT from cookie
-  
-    // Check if the token exists
-    if (!token) {
-        res.status(401).json({ error: 'No token provided. Unauthorized' });
-        return;
-    }
-
-    try {
-        // Verify token and decode the payload
-        const decoded = jwt.verify(token, process.env.secretKey);
-        
-        // If token is valid, return authenticated
-        res.status(200).json({ authenticated: true, user: decoded });
-    } catch (error) {
-        // If token verification fails, return appropriate error
-        if (error.name === 'TokenExpiredError') {
-        res.status(401).json({ error: 'Token expired. Unauthorized' });
-        } else {
-        res.status(401).json({ error: 'Invalid token. Unauthorized' });
-        }
-    }
-}
-
 export const logout = async (req:Request, res: Response) => {
   try {
-    res.cookie('jwt',{
-      maxAge: 0,
-      httpOnly: true,
-    });
+    res.clearCookie("jwt")
     res.status(200).json({ message: 'Successfully logged out' });
+    res.end();
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

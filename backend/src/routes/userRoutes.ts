@@ -1,7 +1,8 @@
 import * as express from 'express';
 import * as userController from '../controllers/userController';
 import * as userAuth from '../middlewares/userAuth';
-const { signup, login, getAllUsers, deleteUser, authCheck, logout } = userController;
+import * as tokenAuth from "../middlewares/tokenAuth";
+const { signup, login, getAllUsers, deleteUser, logout } = userController;
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.post('/login', login );
 // getting all users
 router.get('/users/', getAllUsers);
 router.delete('/users/:id', deleteUser);
-router.get('/auth-check', authCheck)
+router.get('/auth-check', tokenAuth.tokenValidated)
 router.post('/logout', logout)
 
 
