@@ -14,7 +14,7 @@ export default function Home() {
         e.preventDefault();
         try {
             // Call the logout API to clear the cookie
-            await axios.post(`${apiUrl}/logout`);
+            await axios.post(`${apiUrl}/logout`, {}, { withCredentials: true });
             console.log("Successfully Logout")
             // Redirect to login after successful logout
             router.push('/login');
