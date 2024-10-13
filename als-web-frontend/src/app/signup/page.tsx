@@ -79,7 +79,7 @@ export default function SignUp() {
     // create user
     const createUser = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/signup`, values);
+            const response = await axios.post(`${apiUrl}/userService/signup`, values);
             resetForm();
             setServerSideError('');
             router.push('/login');

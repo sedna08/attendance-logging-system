@@ -60,7 +60,7 @@ export default function Login() {
     const userLogin = async () => {
         setLoading(true); // Set loading state
         try {
-            const response = await axios.post(`${apiUrl}/login`, values, { withCredentials: true });
+            const response = await axios.post(`${apiUrl}/userService/login`, values, { withCredentials: true });
             resetForm();
             setServerSideError('');
             // You can show a success message here if desired
