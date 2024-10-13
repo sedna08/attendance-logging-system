@@ -30,12 +30,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-    origin: [process.env.FRONTEND_ORIGIN, "http://localhost:3000"], // Allow specific origins
+    origin: [process.env.API_GATEWAY_ORIGIN, "http://localhost:4000"], // Allow specific origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Specify headers that are allowed
     credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
-app.use('/api/',userRoutes);
+app.use('/userService',userRoutes);
 
 // start express server
 app.listen(PORT, HOST, () => {
