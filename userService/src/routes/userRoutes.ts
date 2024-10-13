@@ -14,7 +14,7 @@ router.post('/login', login );
 // getting all users
 router.get('/users/', getAllUsers);
 router.delete('/users/:id', deleteUser);
-router.get('/auth-check', tokenAuth.tokenValidated)
+// router.get('/auth-check', tokenAuth.tokenValidated)
 router.post('/logout', logout)
 
 
